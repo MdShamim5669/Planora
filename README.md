@@ -2,6 +2,13 @@
 
 Planora is a modern, high-performance event management and discovery platform built with Next.js 14 (App Router), Tailwind CSS, Framer Motion, and TanStack React Query.
 
+## 🔗 Project Links
+
+- **Frontend Repository**: [https://github.com/MdShamim5669/Planora](https://github.com/MdShamim5669/Planora)
+- **Backend Repository**: [https://github.com/MdShamim5669/Planora-Server](https://github.com/MdShamim5669/Planora-Server)
+- **Live Deployed API**: [https://planora-server-vsyx.onrender.com](https://planora-server-vsyx.onrender.com)
+- **Live API Health Check**: [https://planora-server-vsyx.onrender.com/api/v1/health](https://planora-server-vsyx.onrender.com/api/v1/health)
+
 ## 🚀 Key Features
 
 - **Event Discovery & Exploration**: Filter events by category, date, price, and gathering type (Standard, Hybrid, Private, VIP).
