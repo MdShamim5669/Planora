@@ -10,21 +10,93 @@ import {
   Compass,
   MessageSquare,
   AlertCircle,
+  ChevronDown,
+  Shuffle,
 } from 'lucide-react';
 import { askAssistant, AssistantChatMessage, AssistantEventCardData } from '@/lib/assistantApi';
 import { ChatMessage, ChatMessageItem } from './ChatMessage';
 
-const SUGGESTION_CHIPS = [
+const SUGGESTION_POOL = [
   'Free events this weekend',
   'Paid workshops',
   'Events I can join',
+  'Technology and coding meetups',
+  'Upcoming music and cultural fests',
+  'Ei shoptah-r free events',
+  'Design & creative bootcamps',
+  'Events happening today',
+  'Online tech conferences',
+  'Business networking meetups',
+  'Agamikal ki event ache?',
+  'Sports and gaming tournaments',
 ];
+
+const getRandomSuggestions = (exclude: string[] = []): string[] => {
+  const available = SUGGESTION_POOL.filter((item) => !exclude.includes(item));
+  const pool = available.length >= 3 ? available : SUGGESTION_POOL;
+  const shuffled = [...pool].sort(() => 0.5 - Math.random());
+  return shuffled.slice(0, 3);
+};
 
 export const AssistantWidget: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessageItem[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [showSuggestions, setShowSuggestions] = useState(true);
+  const [currentSuggestions, setCurrentSuggestions] = useState<string[]>([
+    'Free events this weekend',
+    'Paid workshops',
+    'Events I can join',
+  ]);
+  const [isShuffling, setIsShuffling] = useState(false);
+
+  // Restore suggestion toggle preference from localStorage
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('planora_assistant_show_suggestions');
+      if (saved !== null) {
+        setShowSuggestions(saved === 'true');
+      }
+    } catch {
+      // Ignore storage errors in restricted contexts
+    }
+  }, []);
+
+  const handleToggleSuggestions = () => {
+    setShowSuggestions((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem('planora_assistant_show_suggestions', String(next));
+      } catch {
+        // Ignore storage errors
+      }
+      return next;
+    });
+  };
+
+  const handleShuffleSuggestions = (e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    setIsShuffling(true);
+    setTimeout(() => {
+      setCurrentSuggestions((prev) => getRandomSuggestions(prev));
+      setIsShuffling(false);
+    }, 200);
+  };
+
+  const handleShuffleMessageSuggestions = (messageId: string) => {
+    setMessages((prev) =>
+      prev.map((m) => {
+        if (m.id === messageId) {
+          return {
+            ...m,
+            suggestions: getRandomSuggestions(m.suggestions || []),
+          };
+        }
+        return m;
+      })
+    );
+  };
 
   const toggleButtonRef = useRef<HTMLButtonElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -90,6 +162,10 @@ export const AssistantWidget: React.FC = () => {
         role: 'assistant',
         content: res.answer,
         events: res.events,
+        suggestions:
+          res.suggestions && res.suggestions.length > 0
+            ? res.suggestions
+            : getRandomSuggestions(),
       };
       setMessages((prev) => [...prev, assistantMsg]);
     } catch (error: any) {
@@ -225,29 +301,88 @@ export const AssistantWidget: React.FC = () => {
                   </p>
                 </div>
 
-                {/* Suggestion Chips */}
+                {/* Suggestion Chips with Toggle & Shuffle */}
                 <div className="pt-2 w-full space-y-2">
-                  <p className="text-[11px] font-medium text-slate-400 uppercase tracking-wider">
-                    Quick suggestions
-                  </p>
-                  <div className="flex flex-col gap-1.5">
-                    {SUGGESTION_CHIPS.map((chip) => (
+                  <div className="flex items-center justify-between px-1">
+                    <button
+                      type="button"
+                      onClick={handleToggleSuggestions}
+                      aria-expanded={showSuggestions}
+                      className="flex items-center gap-1.5 text-[11px] font-medium text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 uppercase tracking-wider transition-colors cursor-pointer group"
+                    >
+                      <span>Quick suggestions</span>
+                      <span className="text-[10px] font-normal px-1.5 py-0.5 rounded-full bg-slate-200/70 dark:bg-slate-800 text-slate-500 dark:text-slate-400 group-hover:bg-blue-100 dark:group-hover:bg-blue-900/40 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                        {currentSuggestions.length}
+                      </span>
+                    </button>
+
+                    <div className="flex items-center gap-1">
+                      {/* Shuffle Button */}
+                      {showSuggestions && (
+                        <button
+                          type="button"
+                          onClick={handleShuffleSuggestions}
+                          disabled={isShuffling}
+                          title="Shuffle new suggestions"
+                          aria-label="Shuffle new suggestions"
+                          className="flex items-center gap-1 text-[11px] font-medium text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 px-2 py-0.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800/60 transition-all cursor-pointer group disabled:opacity-50"
+                        >
+                          <Shuffle
+                            className={`w-3 h-3 text-slate-400 group-hover:text-blue-500 transition-transform ${
+                              isShuffling ? 'rotate-180 duration-200' : ''
+                            }`}
+                          />
+                          <span className="capitalize">Shuffle</span>
+                        </button>
+                      )}
+
+                      {/* Toggle Show/Hide Button */}
                       <button
-                        key={chip}
                         type="button"
-                        onClick={() => handleSendMessage(chip)}
-                        className="text-left text-xs px-3.5 py-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-blue-500 hover:bg-blue-50/50 dark:hover:bg-blue-950/30 text-slate-700 dark:text-slate-300 font-medium transition-all shadow-2xs hover:shadow-xs flex items-center justify-between group"
+                        onClick={handleToggleSuggestions}
+                        aria-label={showSuggestions ? 'Hide quick suggestions' : 'Show quick suggestions'}
+                        className="flex items-center gap-1 text-[11px] font-medium text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 px-2 py-0.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800/60 transition-all cursor-pointer"
                       >
-                        <span>{chip}</span>
-                        <Compass className="w-3.5 h-3.5 text-slate-400 group-hover:text-blue-500 transition-colors" />
+                        <span>{showSuggestions ? 'Hide' : 'Show'}</span>
+                        <ChevronDown
+                          className={`w-3.5 h-3.5 transition-transform duration-200 ${
+                            showSuggestions ? 'rotate-180' : ''
+                          }`}
+                        />
                       </button>
-                    ))}
+                    </div>
                   </div>
+
+                  {showSuggestions && (
+                    <div
+                      className={`flex flex-col gap-1.5 transition-all duration-200 ${
+                        isShuffling ? 'opacity-40 scale-[0.98]' : 'opacity-100 scale-100'
+                      }`}
+                    >
+                      {currentSuggestions.map((chip) => (
+                        <button
+                          key={chip}
+                          type="button"
+                          onClick={() => handleSendMessage(chip)}
+                          className="text-left text-xs px-3.5 py-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-blue-500 hover:bg-blue-50/50 dark:hover:bg-blue-950/30 text-slate-700 dark:text-slate-300 font-medium transition-all shadow-2xs hover:shadow-xs flex items-center justify-between group cursor-pointer animate-in fade-in duration-150"
+                        >
+                          <span>{chip}</span>
+                          <Compass className="w-3.5 h-3.5 text-slate-400 group-hover:text-blue-500 transition-colors" />
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
             ) : (
               messages.map((m) => (
-                <ChatMessage key={m.id} message={m} onRetry={handleRetryLast} />
+                <ChatMessage
+                  key={m.id}
+                  message={m}
+                  onRetry={handleRetryLast}
+                  onSelectSuggestion={handleSendMessage}
+                  onShuffleSuggestions={handleShuffleMessageSuggestions}
+                />
               ))
             )}
 
@@ -273,6 +408,70 @@ export const AssistantWidget: React.FC = () => {
 
           {/* Footer Input */}
           <div className="p-3 bg-white dark:bg-slate-950 border-t border-slate-200 dark:border-slate-800 space-y-2 flex-shrink-0">
+            {/* Quick Suggestions strip above input during chat */}
+            {messages.length > 0 && (
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between px-1">
+                  <span className="flex items-center gap-1.5 text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+                    <Sparkles className="w-3 h-3 text-blue-500" />
+                    <span>Suggestions</span>
+                  </span>
+                  <div className="flex items-center gap-1">
+                    {showSuggestions && (
+                      <button
+                        type="button"
+                        onClick={handleShuffleSuggestions}
+                        disabled={isShuffling}
+                        title="Shuffle suggestions"
+                        aria-label="Shuffle suggestions"
+                        className="flex items-center gap-1 text-[10px] font-medium text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 px-1.5 py-0.5 rounded hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer group disabled:opacity-50"
+                      >
+                        <Shuffle
+                          className={`w-2.5 h-2.5 text-slate-400 group-hover:text-blue-500 transition-transform ${
+                            isShuffling ? 'rotate-180 duration-200' : ''
+                          }`}
+                        />
+                        <span className="capitalize">Shuffle</span>
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      onClick={handleToggleSuggestions}
+                      aria-label={showSuggestions ? 'Hide suggestions' : 'Show suggestions'}
+                      className="flex items-center gap-0.5 text-[10px] font-medium text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 px-1.5 py-0.5 rounded hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+                    >
+                      <span>{showSuggestions ? 'Hide' : 'Show'}</span>
+                      <ChevronDown
+                        className={`w-3 h-3 transition-transform duration-200 ${
+                          showSuggestions ? 'rotate-180' : ''
+                        }`}
+                      />
+                    </button>
+                  </div>
+                </div>
+
+                {showSuggestions && (
+                  <div
+                    className={`flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none transition-all duration-200 ${
+                      isShuffling ? 'opacity-40 scale-[0.98]' : 'opacity-100 scale-100'
+                    }`}
+                  >
+                    {currentSuggestions.map((chip) => (
+                      <button
+                        key={chip}
+                        type="button"
+                        onClick={() => handleSendMessage(chip)}
+                        className="px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-800/90 hover:bg-blue-50 dark:hover:bg-blue-950/40 border border-slate-200/80 dark:border-slate-700/80 hover:border-blue-400 text-slate-700 dark:text-slate-300 text-[11px] whitespace-nowrap transition-all flex-shrink-0 cursor-pointer flex items-center gap-1 group shadow-2xs hover:shadow-xs"
+                      >
+                        <span>{chip}</span>
+                        <Compass className="w-3 h-3 text-slate-400 group-hover:text-blue-500 transition-colors" />
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
             <div className="relative">
               <textarea
                 ref={inputRef}

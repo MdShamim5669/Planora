@@ -21,6 +21,7 @@ export interface AskAssistantResponse {
   answer: string;
   events: AssistantEventCardData[];
   usedRetriever: 'keyword' | 'vector';
+  suggestions?: string[];
 }
 
 export interface AskAssistantApiResponse {

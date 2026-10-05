@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Bot, User, Sparkles } from 'lucide-react';
+import { Bot, User, Sparkles, Compass, Shuffle } from 'lucide-react';
 import { AssistantEventCardData } from '@/lib/assistantApi';
 import { AssistantEventCard } from './AssistantEventCard';
 
@@ -10,15 +10,23 @@ export interface ChatMessageItem {
   role: 'user' | 'assistant';
   content: string;
   events?: AssistantEventCardData[];
+  suggestions?: string[];
   isError?: boolean;
 }
 
 interface ChatMessageProps {
   message: ChatMessageItem;
   onRetry?: () => void;
+  onSelectSuggestion?: (suggestion: string) => void;
+  onShuffleSuggestions?: (messageId: string) => void;
 }
 
-export const ChatMessage: React.FC<ChatMessageProps> = ({ message, onRetry }) => {
+export const ChatMessage: React.FC<ChatMessageProps> = ({
+  message,
+  onRetry,
+  onSelectSuggestion,
+  onShuffleSuggestions,
+}) => {
   const isUser = message.role === 'user';
 
   return (
@@ -70,6 +78,43 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message, onRetry }) =>
             {message.events.map((ev) => (
               <AssistantEventCard key={ev.id} event={ev} />
             ))}
+          </div>
+        )}
+
+        {/* Follow-up / Suggested questions */}
+        {!isUser && message.suggestions && message.suggestions.length > 0 && (
+          <div className="pt-1.5 space-y-1.5 animate-in fade-in-50 duration-200">
+            <div className="flex items-center justify-between px-0.5">
+              <div className="flex items-center gap-1.5 text-[11px] font-medium text-slate-400 dark:text-slate-500">
+                <Sparkles className="w-3 h-3 text-blue-500" />
+                <span>Suggested questions</span>
+              </div>
+              {onShuffleSuggestions && (
+                <button
+                  type="button"
+                  onClick={() => onShuffleSuggestions(message.id)}
+                  title="Shuffle new suggestions"
+                  aria-label="Shuffle new suggestions"
+                  className="flex items-center gap-1 text-[10px] font-medium text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 px-1.5 py-0.5 rounded hover:bg-slate-200/50 dark:hover:bg-slate-700/50 transition-colors cursor-pointer group"
+                >
+                  <Shuffle className="w-2.5 h-2.5 text-slate-400 group-hover:text-blue-500 transition-transform group-hover:rotate-180 duration-200" />
+                  <span>Shuffle</span>
+                </button>
+              )}
+            </div>
+            <div className="flex flex-col gap-1.5">
+              {message.suggestions.map((suggestion) => (
+                <button
+                  key={suggestion}
+                  type="button"
+                  onClick={() => onSelectSuggestion?.(suggestion)}
+                  className="text-left text-xs px-3.5 py-2 rounded-xl bg-white dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700/80 hover:border-blue-500 hover:bg-blue-50/50 dark:hover:bg-blue-950/30 text-slate-700 dark:text-slate-300 font-medium transition-all shadow-2xs hover:shadow-xs flex items-center justify-between group cursor-pointer"
+                >
+                  <span>{suggestion}</span>
+                  <Compass className="w-3.5 h-3.5 text-slate-400 group-hover:text-blue-500 transition-colors flex-shrink-0" />
+                </button>
+              ))}
+            </div>
           </div>
         )}
       </div>
