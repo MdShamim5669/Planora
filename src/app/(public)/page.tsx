@@ -163,7 +163,7 @@ export default function HomePage() {
             {/* Right: Modern Luxury Hero Parallax Layers (@motion/hero-parallax-layers) */}
             <div className="lg:col-span-6 relative flex items-center justify-center">
               <HeroParallaxLayers
-                imageSrc={featured?.coverImage || '/images/hero-event.jpg'}
+                imageSrc={featured?.bannerImage || featured?.imageUrl || featured?.coverImage || '/images/hero-event.jpg'}
                 title={featured?.title || 'Tech Summit Bangladesh 2026'}
                 date={featured?.eventDate ? formatDate(featured.eventDate) : 'Oct 19, 2026'}
                 location={featured?.venue || featured?.location || 'BICC Auditorium, Dhaka'}

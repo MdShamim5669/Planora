@@ -16,7 +16,7 @@ interface EventCardProps {
 // Generate deterministic thematic gradient covers based on event title
 function getCoverTheme(title: string) {
   const t = title.toLowerCase();
-  if (t.includes('design') || t.includes('ui/ux')) {
+  if (t.includes('design') || t.includes('ui/ux') || t.includes('typography')) {
     return {
       gradient: 'from-purple-900 via-indigo-950 to-pink-950',
       badge: '🎨 Design',
@@ -30,25 +30,60 @@ function getCoverTheme(title: string) {
       accent: 'from-emerald-500 to-teal-500',
     };
   }
-  if (t.includes('cyber') || t.includes('security')) {
+  if (t.includes('cyber') || t.includes('security') || t.includes('hacker')) {
     return {
       gradient: 'from-slate-950 via-blue-950 to-slate-900',
       badge: '🛡️ Security',
       accent: 'from-blue-500 to-cyan-500',
     };
   }
-  if (t.includes('summit') || t.includes('leadership')) {
+  if (t.includes('summit') || t.includes('leadership') || t.includes('roundtable') || t.includes('inner circle')) {
     return {
       gradient: 'from-indigo-950 via-slate-900 to-purple-950',
       badge: '🚀 Summit',
       accent: 'from-amber-500 to-orange-500',
     };
   }
-  if (t.includes('flutter') || t.includes('mobile')) {
+  if (t.includes('flutter') || t.includes('mobile') || t.includes('react native') || t.includes('dart')) {
     return {
       gradient: 'from-blue-950 via-indigo-950 to-cyan-950',
       badge: '📱 Mobile',
       accent: 'from-cyan-500 to-blue-500',
+    };
+  }
+  if (t.includes('ai') || t.includes('llm') || t.includes('machine learning') || t.includes('vision') || t.includes('nlp')) {
+    return {
+      gradient: 'from-fuchsia-950 via-purple-950 to-slate-950',
+      badge: '🤖 AI & ML',
+      accent: 'from-fuchsia-500 to-violet-500',
+    };
+  }
+  if (t.includes('cloud') || t.includes('devops') || t.includes('kubernetes') || t.includes('docker') || t.includes('terraform')) {
+    return {
+      gradient: 'from-cyan-950 via-slate-900 to-blue-950',
+      badge: '☁️ Cloud & DevOps',
+      accent: 'from-cyan-500 to-blue-500',
+    };
+  }
+  if (t.includes('investor') || t.includes('startup') || t.includes('founder') || t.includes('venture') || t.includes('fintech') || t.includes('saas') || t.includes('sales')) {
+    return {
+      gradient: 'from-amber-950 via-slate-900 to-yellow-950',
+      badge: '💼 Business & VC',
+      accent: 'from-amber-500 to-yellow-500',
+    };
+  }
+  if (t.includes('game') || t.includes('godot') || t.includes('unreal') || t.includes('blender') || t.includes('3d')) {
+    return {
+      gradient: 'from-rose-950 via-slate-900 to-pink-950',
+      badge: '🎮 Game Dev',
+      accent: 'from-rose-500 to-pink-500',
+    };
+  }
+  if (t.includes('postgres') || t.includes('database') || t.includes('data') || t.includes('sql') || t.includes('spark') || t.includes('iceberg')) {
+    return {
+      gradient: 'from-blue-950 via-slate-900 to-indigo-950',
+      badge: '🗄️ Database & Data',
+      accent: 'from-blue-500 to-indigo-500',
     };
   }
   return {
@@ -59,10 +94,12 @@ function getCoverTheme(title: string) {
 }
 
 export const EventCard: React.FC<EventCardProps> = ({ event, featured = false }) => {
+  const [imageError, setImageError] = React.useState(false);
   const feeNumber = Number(event.fee);
   const isFree = feeNumber === 0;
   const isOnline = !!event.eventLink && !event.venue;
   const theme = getCoverTheme(event.title);
+  const coverUrl = event.bannerImage || event.imageUrl || event.coverImage;
 
   return (
     <div
@@ -72,11 +109,12 @@ export const EventCard: React.FC<EventCardProps> = ({ event, featured = false })
     >
       {/* Top Banner Cover */}
       <div className={`relative w-full h-44 bg-gradient-to-br ${theme.gradient} overflow-hidden shrink-0`}>
-        {/* Render Cloudinary banner image if present */}
-        {(event.bannerImage || event.imageUrl || event.coverImage) ? (
+        {/* Render banner image if present and not errored */}
+        {coverUrl && !imageError ? (
           <img
-            src={event.bannerImage || event.imageUrl || event.coverImage || ''}
+            src={coverUrl}
             alt={event.title}
+            onError={() => setImageError(true)}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
           />
         ) : (

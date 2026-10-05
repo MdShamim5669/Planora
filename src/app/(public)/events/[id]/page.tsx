@@ -258,22 +258,46 @@ export default function EventDetailsPage() {
       </Link>
 
       {/* Main Event Card */}
-      <div className="bg-white rounded-3xl border border-border p-6 sm:p-10 shadow-sm relative overflow-hidden">
-        {/* Badges */}
-        <div className="flex flex-wrap items-center gap-2 mb-4">
-          <Badge variant={event.visibility === 'PUBLIC' ? 'public' : 'private'} />
-          <Badge variant={event.fee === 0 ? 'free' : 'paid'} amount={event.fee} />
-          {event.isFeatured && (
-            <span className="px-2.5 py-0.5 rounded-full text-xs font-bold uppercase bg-amber-100 text-amber-800 border border-amber-300">
-              ⭐ Featured Event
-            </span>
-          )}
-        </div>
+      <div className="bg-white rounded-3xl border border-border shadow-sm relative overflow-hidden">
+        {/* Event Banner Image */}
+        {(event.bannerImage || event.imageUrl || event.coverImage) && (
+          <div className="relative w-full h-56 sm:h-72 md:h-80 bg-slate-900 overflow-hidden">
+            <img
+              src={event.bannerImage || event.imageUrl || event.coverImage || ''}
+              alt={event.title}
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/25 to-transparent pointer-events-none" />
+            <div className="absolute bottom-4 left-6 sm:left-10 z-10 flex flex-wrap items-center gap-2">
+              <Badge variant={event.visibility === 'PUBLIC' ? 'public' : 'private'} />
+              <Badge variant={event.fee === 0 ? 'free' : 'paid'} amount={event.fee} />
+              {event.isFeatured && (
+                <span className="px-2.5 py-0.5 rounded-full text-xs font-bold uppercase bg-amber-400 text-slate-950 shadow-sm">
+                  ⭐ Featured Event
+                </span>
+              )}
+            </div>
+          </div>
+        )}
 
-        {/* Title */}
-        <h1 className="text-3xl sm:text-4xl font-extrabold text-foreground tracking-tight leading-tight">
-          {event.title}
-        </h1>
+        <div className="p-6 sm:p-10">
+          {/* Badges fallback if no image */}
+          {!(event.bannerImage || event.imageUrl || event.coverImage) && (
+            <div className="flex flex-wrap items-center gap-2 mb-4">
+              <Badge variant={event.visibility === 'PUBLIC' ? 'public' : 'private'} />
+              <Badge variant={event.fee === 0 ? 'free' : 'paid'} amount={event.fee} />
+              {event.isFeatured && (
+                <span className="px-2.5 py-0.5 rounded-full text-xs font-bold uppercase bg-amber-100 text-amber-800 border border-amber-300">
+                  ⭐ Featured Event
+                </span>
+              )}
+            </div>
+          )}
+
+          {/* Title */}
+          <h1 className="text-3xl sm:text-4xl font-extrabold text-foreground tracking-tight leading-tight">
+            {event.title}
+          </h1>
 
         {/* Host Meta */}
         <div className="mt-4 flex items-center gap-3 text-sm text-muted">
@@ -362,6 +386,7 @@ export default function EventDetailsPage() {
           </p>
         </div>
       </div>
+    </div>
 
       {/* Reviews Section */}
       <ReviewList
