@@ -1,23 +1,47 @@
 import axios from 'axios';
 import { getAuthToken, removeAuthToken } from './auth-token';
 
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL ||
-  (process.env.NODE_ENV === 'production'
+export const getApiBaseUrl = (): string => {
+  // If running in browser and deployed on Vercel or any non-local domain
+  if (typeof window !== 'undefined') {
+    const isLocalhost =
+      window.location.hostname === 'localhost' ||
+      window.location.hostname === '127.0.0.1';
+
+    if (!isLocalhost) {
+      const envUrl = process.env.NEXT_PUBLIC_API_URL;
+      if (envUrl && !envUrl.includes('localhost') && !envUrl.includes('127.0.0.1')) {
+        return envUrl;
+      }
+      return 'https://planora-server-vsyx.onrender.com/api/v1';
+    }
+  }
+
+  // If environment variable explicitly provided and not pointing to localhost in production
+  if (process.env.NEXT_PUBLIC_API_URL) {
+    if (process.env.NODE_ENV === 'production' && process.env.NEXT_PUBLIC_API_URL.includes('localhost')) {
+      return 'https://planora-server-vsyx.onrender.com/api/v1';
+    }
+    return process.env.NEXT_PUBLIC_API_URL;
+  }
+
+  return process.env.NODE_ENV === 'production'
     ? 'https://planora-server-vsyx.onrender.com/api/v1'
-    : 'http://localhost:5000/api/v1');
+    : 'http://localhost:5000/api/v1';
+};
 
 export const api = axios.create({
-  baseURL: API_BASE_URL,
+  baseURL: getApiBaseUrl(),
   headers: {
     'Content-Type': 'application/json',
   },
   timeout: 30000,
 });
 
-// Request Interceptor: Attach JWT Bearer token
+// Request Interceptor: Attach JWT Bearer token & dynamic baseURL
 api.interceptors.request.use(
   (config) => {
+    config.baseURL = getApiBaseUrl();
     const token = getAuthToken();
     if (token && config.headers) {
       config.headers.Authorization = `Bearer ${token}`;
