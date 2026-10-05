@@ -7,10 +7,9 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useAuth } from '@/context/AuthContext';
-import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import toast from 'react-hot-toast';
-import { Mail, Lock, User, Phone, ArrowRight } from 'lucide-react';
+import { Mail, Lock, User, Phone, ArrowRight, Eye, EyeOff, Loader2 } from 'lucide-react';
 
 const registerSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters').max(80, 'Name must not exceed 80 characters'),
@@ -28,6 +27,7 @@ export default function RegisterPage() {
   const { register: registerAuth } = useAuth();
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const {
     register,
@@ -58,18 +58,24 @@ export default function RegisterPage() {
   };
 
   return (
-    <div>
-      <div className="text-center mb-6">
-        <h2 className="text-2xl font-bold text-foreground tracking-tight">Create your account</h2>
-        <p className="mt-1 text-sm text-muted">Join events or host your own community gatherings</p>
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="text-center space-y-1.5">
+        <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+          Create your account
+        </h2>
+        <p className="text-xs sm:text-sm text-slate-500 max-w-xs mx-auto leading-relaxed">
+          Join events or host your own community gatherings across Bangladesh
+        </p>
       </div>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      {/* Form */}
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 pt-1">
         <Input
           label="Full name"
           type="text"
           placeholder="e.g. Tanvir Ahmed"
-          leftIcon={<User className="w-4 h-4" />}
+          leftIcon={<User className="w-4 h-4 text-indigo-500" />}
           error={errors.name?.message}
           {...register('name')}
         />
@@ -77,9 +83,9 @@ export default function RegisterPage() {
         <Input
           label="Email address"
           type="email"
-          placeholder="you@example.com"
+          placeholder="name@example.com"
           autoComplete="email"
-          leftIcon={<Mail className="w-4 h-4" />}
+          leftIcon={<Mail className="w-4 h-4 text-indigo-500" />}
           error={errors.email?.message}
           {...register('email')}
         />
@@ -87,31 +93,62 @@ export default function RegisterPage() {
         <Input
           label="Phone number (optional)"
           type="tel"
-          placeholder="017XXXXXXXX"
-          leftIcon={<Phone className="w-4 h-4" />}
+          placeholder="+88017XXXXXXXX"
+          leftIcon={<Phone className="w-4 h-4 text-indigo-500" />}
           error={errors.phone?.message}
           {...register('phone')}
         />
 
         <Input
           label="Password"
-          type="password"
+          type={showPassword ? 'text' : 'password'}
           placeholder="At least 8 characters with letter & number"
           autoComplete="new-password"
-          leftIcon={<Lock className="w-4 h-4" />}
+          leftIcon={<Lock className="w-4 h-4 text-indigo-500" />}
+          rightIcon={
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="hover:text-slate-700 transition-colors p-1 focus:outline-none cursor-pointer"
+              aria-label={showPassword ? 'Hide password' : 'Show password'}
+            >
+              {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+            </button>
+          }
           error={errors.password?.message}
           helperText="Must be 8+ characters, including letters and numbers"
           {...register('password')}
         />
 
-        <Button type="submit" className="w-full mt-2" isLoading={isLoading} rightIcon={<ArrowRight className="w-4 h-4" />}>
-          Create Account
-        </Button>
+        {/* Primary Luxury CTA Button */}
+        <button
+          type="submit"
+          disabled={isLoading}
+          className="group relative w-full py-3.5 px-4 mt-2 overflow-hidden rounded-xl bg-gradient-to-r from-indigo-600 via-indigo-700 to-purple-600 hover:from-indigo-500 hover:via-indigo-600 hover:to-purple-500 text-white font-bold text-sm shadow-lg shadow-indigo-600/25 hover:shadow-indigo-600/40 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:transform-none"
+        >
+          <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/15 to-white/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+
+          {isLoading ? (
+            <>
+              <Loader2 className="w-4 h-4 animate-spin text-white" />
+              <span>Creating account...</span>
+            </>
+          ) : (
+            <>
+              <span>Create Free Account</span>
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-200" />
+            </>
+          )}
+        </button>
       </form>
 
-      <div className="mt-6 text-center text-sm text-muted">
+      {/* Switch to Login */}
+      <div className="pt-2 border-t border-slate-100 text-center text-xs text-slate-500">
         Already have an account?{' '}
-        <Link href="/login" className="font-semibold text-primary hover:text-primary-hover">
+        <Link
+          href="/login"
+          className="font-bold text-indigo-600 hover:text-indigo-700 hover:underline transition-colors"
+        >
           Sign in
         </Link>
       </div>

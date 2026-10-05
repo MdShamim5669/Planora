@@ -7,10 +7,9 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useAuth } from '@/context/AuthContext';
-import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import toast from 'react-hot-toast';
-import { Mail, Lock, ArrowRight } from 'lucide-react';
+import { Mail, Lock, ArrowRight, Eye, EyeOff, Sparkles, Loader2 } from 'lucide-react';
 
 const loginSchema = z.object({
   email: z.string().min(1, 'Email is required').email('Invalid email address'),
@@ -25,6 +24,8 @@ function LoginForm() {
   const searchParams = useSearchParams();
   const redirect = searchParams.get('redirect') || '/dashboard';
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(true);
 
   const {
     register,
@@ -53,41 +54,101 @@ function LoginForm() {
   };
 
   return (
-    <div>
-      <div className="text-center mb-6">
-        <h2 className="text-2xl font-bold text-foreground tracking-tight">Sign in to your account</h2>
-        <p className="mt-1 text-sm text-muted">Manage your events, passes, and registrations</p>
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="text-center space-y-1.5">
+        <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+          Welcome back
+        </h2>
+        <p className="text-xs sm:text-sm text-slate-500 max-w-xs mx-auto leading-relaxed">
+          Sign in to manage your events, passes, and registrations across Bangladesh
+        </p>
       </div>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      {/* Form */}
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 pt-1">
         <Input
           label="Email address"
           type="email"
-          placeholder="you@example.com"
+          placeholder="name@example.com"
           autoComplete="email"
-          leftIcon={<Mail className="w-4 h-4" />}
+          leftIcon={<Mail className="w-4 h-4 text-indigo-500" />}
           error={errors.email?.message}
           {...register('email')}
         />
 
-        <Input
-          label="Password"
-          type="password"
-          placeholder="••••••••"
-          autoComplete="current-password"
-          leftIcon={<Lock className="w-4 h-4" />}
-          error={errors.password?.message}
-          {...register('password')}
-        />
+        <div className="space-y-1.5">
+          <Input
+            label="Password"
+            type={showPassword ? 'text' : 'password'}
+            placeholder="••••••••"
+            autoComplete="current-password"
+            leftIcon={<Lock className="w-4 h-4 text-indigo-500" />}
+            rightIcon={
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="hover:text-slate-700 transition-colors p-1 focus:outline-none cursor-pointer"
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
+              >
+                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            }
+            error={errors.password?.message}
+            {...register('password')}
+          />
+        </div>
 
-        <Button type="submit" className="w-full mt-2" isLoading={isLoading} rightIcon={<ArrowRight className="w-4 h-4" />}>
-          Sign In
-        </Button>
+        {/* Remember Me & Forgot Password Row */}
+        <div className="flex items-center justify-between text-xs pt-0.5">
+          <label className="flex items-center gap-2 cursor-pointer select-none text-slate-600 hover:text-slate-800">
+            <input
+              type="checkbox"
+              checked={rememberMe}
+              onChange={(e) => setRememberMe(e.target.checked)}
+              className="w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 focus:ring-offset-0 cursor-pointer"
+            />
+            <span className="font-medium">Remember me</span>
+          </label>
+
+          <Link
+            href="/forgot-password"
+            className="font-semibold text-indigo-600 hover:text-indigo-700 transition-colors"
+          >
+            Forgot password?
+          </Link>
+        </div>
+
+        {/* Primary Luxury CTA Button */}
+        <button
+          type="submit"
+          disabled={isLoading}
+          className="group relative w-full py-3.5 px-4 mt-2 overflow-hidden rounded-xl bg-gradient-to-r from-indigo-600 via-indigo-700 to-purple-600 hover:from-indigo-500 hover:via-indigo-600 hover:to-purple-500 text-white font-bold text-sm shadow-lg shadow-indigo-600/25 hover:shadow-indigo-600/40 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:transform-none"
+        >
+          {/* Subtle button sheen overlay */}
+          <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/15 to-white/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+
+          {isLoading ? (
+            <>
+              <Loader2 className="w-4 h-4 animate-spin text-white" />
+              <span>Signing in...</span>
+            </>
+          ) : (
+            <>
+              <span>Sign In to Account</span>
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-200" />
+            </>
+          )}
+        </button>
       </form>
 
-      <div className="mt-6 text-center text-sm text-muted">
+      {/* Switch to Register */}
+      <div className="pt-2 border-t border-slate-100 text-center text-xs text-slate-500">
         Don&apos;t have an account?{' '}
-        <Link href="/register" className="font-semibold text-primary hover:text-primary-hover">
+        <Link
+          href="/register"
+          className="font-bold text-indigo-600 hover:text-indigo-700 hover:underline transition-colors"
+        >
           Sign up now
         </Link>
       </div>
