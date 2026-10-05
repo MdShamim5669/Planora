@@ -5,6 +5,7 @@ import { AuthProvider } from '@/context/AuthContext';
 import QueryProvider from '@/providers/QueryProvider';
 import { Toaster } from 'react-hot-toast';
 import { PageCurtainProvider } from '@/components/ui/PageCurtain';
+import { AssistantWidget } from '@/components/assistant/AssistantWidget';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 
@@ -27,6 +28,7 @@ export default function RootLayout({
             <PageCurtainProvider>
               {children}
             </PageCurtainProvider>
+            <AssistantWidget />
             <Toaster
               position="top-right"
               toastOptions={{
