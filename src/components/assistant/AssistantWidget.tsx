@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
+import { usePathname } from 'next/navigation';
 import {
   Sparkles,
   X,
@@ -39,6 +40,12 @@ const getRandomSuggestions = (exclude: string[] = []): string[] => {
 };
 
 export const AssistantWidget: React.FC = () => {
+  const pathname = usePathname();
+
+  // Hide assistant on admin, authentication, and password recovery pages
+  const hiddenRoutes = ['/admin', '/login', '/register', '/forgot-password', '/reset-password'];
+  const isHidden = hiddenRoutes.some((route) => pathname?.startsWith(route));
+
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessageItem[]>([]);
   const [input, setInput] = useState('');
@@ -207,10 +214,22 @@ export const AssistantWidget: React.FC = () => {
     }
   };
 
+  // Close assistant if navigated to a hidden route
+  useEffect(() => {
+    if (isHidden && isOpen) {
+      setIsOpen(false);
+    }
+  }, [isHidden, isOpen]);
+
+  // Do not render on hidden routes (admin, login, register, etc.)
+  if (isHidden) {
+    return null;
+  }
+
   return (
     <>
       {/* Floating Toggle Button */}
-      <div className="fixed bottom-6 right-6 z-50">
+      <div className="fixed bottom-6 right-6 z-50 print:hidden">
         <button
           ref={toggleButtonRef}
           type="button"
@@ -241,7 +260,7 @@ export const AssistantWidget: React.FC = () => {
         <div
           role="dialog"
           aria-label="Planora Assistant"
-          className="fixed inset-0 sm:inset-auto sm:bottom-24 sm:right-6 z-50 w-full sm:w-[410px] h-full sm:h-[600px] sm:max-h-[85vh] bg-white dark:bg-slate-950 sm:rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200"
+          className="fixed inset-0 sm:inset-auto sm:bottom-24 sm:right-6 z-50 w-full sm:w-[410px] h-full sm:h-[600px] sm:max-h-[85vh] bg-white dark:bg-slate-950 sm:rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200 print:hidden"
         >
           {/* Header */}
           <div className="flex items-center justify-between px-4 py-3.5 bg-gradient-to-r from-blue-600 to-indigo-700 text-white shadow-sm flex-shrink-0">
