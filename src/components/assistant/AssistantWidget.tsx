@@ -93,10 +93,14 @@ export const AssistantWidget: React.FC = () => {
       };
       setMessages((prev) => [...prev, assistantMsg]);
     } catch (error: any) {
+      console.error('Assistant error:', error);
+      const serverMessage = error?.response?.data?.message;
       const errorMsg: ChatMessageItem = {
         id: `err-${Date.now()}`,
         role: 'assistant',
-        content: "Sorry, I couldn't write a full answer right now. Please try again.",
+        content:
+          serverMessage ||
+          "Sorry, I couldn't reach the Planora assistant service right now. Please try again in a moment.",
         isError: true,
       };
       setMessages((prev) => [...prev, errorMsg]);
