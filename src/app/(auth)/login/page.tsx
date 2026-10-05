@@ -10,7 +10,7 @@ import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import toast from 'react-hot-toast';
-import { Mail, Lock, ArrowRight, ShieldCheck } from 'lucide-react';
+import { Mail, Lock, ArrowRight } from 'lucide-react';
 
 const loginSchema = z.object({
   email: z.string().min(1, 'Email is required').email('Invalid email address'),
@@ -29,7 +29,6 @@ function LoginForm() {
   const {
     register,
     handleSubmit,
-    setValue,
     formState: { errors },
   } = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -51,11 +50,6 @@ function LoginForm() {
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const fillDemo = (email: string, pass: string) => {
-    setValue('email', email, { shouldValidate: true });
-    setValue('password', pass, { shouldValidate: true });
   };
 
   return (
@@ -90,32 +84,6 @@ function LoginForm() {
           Sign In
         </Button>
       </form>
-
-      {/* Quick Demo Credentials for Evaluation */}
-      <div className="mt-6 pt-5 border-t border-border">
-        <p className="text-xs font-semibold text-muted uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
-          <ShieldCheck className="w-3.5 h-3.5 text-primary" />
-          Quick Test Credentials
-        </p>
-        <div className="grid grid-cols-2 gap-2">
-          <button
-            type="button"
-            onClick={() => fillDemo('Tamjisulislamsamim@gmail.com', 'Samim5669')}
-            className="text-left p-2 rounded-lg bg-slate-50 hover:bg-slate-100 border border-border text-xs transition-colors"
-          >
-            <p className="font-semibold text-purple-700">👑 Admin</p>
-            <p className="text-muted truncate">tamjisul...samim@gmail.com</p>
-          </button>
-          <button
-            type="button"
-            onClick={() => fillDemo('tanvir.dev@gmail.com', 'User1234!')}
-            className="text-left p-2 rounded-lg bg-slate-50 hover:bg-slate-100 border border-border text-xs transition-colors"
-          >
-            <p className="font-semibold text-primary">👤 Host (Tanvir)</p>
-            <p className="text-muted truncate">tanvir.dev@gmail.com</p>
-          </button>
-        </div>
-      </div>
 
       <div className="mt-6 text-center text-sm text-muted">
         Don&apos;t have an account?{' '}
